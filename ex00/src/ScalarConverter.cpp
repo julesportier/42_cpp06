@@ -4,7 +4,9 @@
 #include <stdexcept>
 #include <cctype>
 #include <cstdlib>
+#include <errno.h>
 
+// #define DEBUG
 /**************************
 * CONSTRUCTORS/DESTRUCTOR *
 **************************/
@@ -33,13 +35,6 @@ typedef enum e_type {
 	double_float,
 } str_type;
 
-typedef struct s_scalar_types {
-	char c;
-	int i;
-	float f;
-	double d;
-} scalar_types;
-
 #define DIGITS "0123456789"
 
 static str_type getType(std::string str)
@@ -61,79 +56,148 @@ static str_type getType(std::string str)
 	}
 }
 
-static scalar_types scalarsFromChar(char c)
+static void printChar(char c)
 {
-	scalar_types scalars;
-	scalars.c = c;
-	scalars.i = static_cast<int>(scalars.c - '0');
-	scalars.f = static_cast<float>(scalars.c - '0');
-	scalars.d = static_cast<double>(scalars.c - '0');
-	return (scalars);
+	std::cout << "char: ";
+	if (c < 0)
+		std::cout << "out of range\n";
+	else if (isprint(c))
+		std::cout << c << '\n';
+	else
+		std::cout << "Non displayable\n";
 }
 
-static scalar_types scalarsFromInt(const char* str)
+static void printInt(int i)
 {
-	scalar_types scalars;
+	std::cout << "int: ";
+	std::cout << i << '\n';
+}
+
+static void printFloat(float f)
+{
+	std::cout << "float: ";
+	std::cout << f << '\n';
+}
+
+static void printDouble(double d)
+{
+	std::cout << "double: ";
+	std::cout << d << '\n';
+}
+
+static void printFromChar(char c)
+{
+#ifdef DEBUG
+	std::cout << "printFromChar()\n";
+#endif
+
+	printChar(c);
+	std::cout << "int: " << static_cast<int>(c);
+	std::cout << "float: " << static_cast<float>(c);
+	std::cout << "double: " << static_cast<double>(c);
+}
+
+#define OUT_OF_RANGE(X, TYPE) (\
+		(X) > std::numeric_limits<TYPE>::max()\
+		|| (X) < std::numeric_limits<TYPE>::min())
+
+static void printFromInt(const char* str)
+{
+#ifdef DEBUG
+	std::cout << "printFromInt()\n";
+#endif
+
 	char* end_ptr;
+	errno = 0;
 	long l = std::strtol(str, &end_ptr, 10);
-	if (*end_ptr != '\0')
+	std::cout << *end_ptr << '\n';
+	if (*end_ptr != '\0' || errno)
 		throw std::invalid_argument("invalid input");
-	// if (l > std::numeric_limits<int>::max())
-	// handled by static cast ?
-	scalars.i = static_cast<int>(l);
-	scalars.f = static_cast<float>(l);
-	scalars.d = static_cast<double>(l);
-	scalars.c = static_cast<char>(l);
-	return (scalars);
+
+	if (l > 127 || l < 0)
+		printChar(static_cast<char>(-1));
+	else
+		printChar(static_cast<char>(l));
+
+	if (OUT_OF_RANGE(l, int))
+		std::cout << "int: out of range\n";
+	else
+		printInt(static_cast<int>(l));
+
+	if (OUT_OF_RANGE(l, float))
+		std::cout << "float: out of range\n";
+	else
+		printFloat(static_cast<float>(l));
+
+	if (OUT_OF_RANGE(l, double))
+		std::cout << "double: out of range\n";
+	else
+		printDouble(static_cast<double>(l));
 }
 
-static scalar_types scalarsFromFloating(const char* str)
+static void printFromFloating(const char* str)
 {
-	scalar_types scalars;
+#ifdef DEBUG
+	std::cout << "printFromFloating()\n";
+#endif
+
 	char* end_ptr;
-	scalars.d = std::strtod(str, &end_ptr);
-	if (*end_ptr != '\0')
+	errno = 0;
+	double d = std::strtod(str, &end_ptr);
+
+#ifdef DEBUG
+	std::cout << "*end_ptr == " << *end_ptr << '\n';
+	std::cout << "errno == " << errno << '\n';
+#endif
+
+	if (!(*end_ptr == '\0'
+				|| (*end_ptr == 'f' && *(end_ptr + 1) == '\0'))
+			|| errno)
 		throw std::invalid_argument("invalid input");
-	// if (l > std::numeric_limits<int>::max())
-	// handled by static cast ?
-	scalars.i = static_cast<int>(scalars.d);
-	scalars.f = static_cast<float>(scalars.d);
-	scalars.c = static_cast<char>(scalars.d);
-	return (scalars);
+
+	if (d > 127 || d < 0)
+		printChar(static_cast<char>(-1));
+	else
+		printChar(static_cast<char>(d));
+
+	if (OUT_OF_RANGE(d, int))
+		std::cout << "int: out of range\n";
+	else
+		printInt(static_cast<int>(d));
+
+	if (OUT_OF_RANGE(d, float))
+		std::cout << "float: out of range\n";
+	else
+		printFloat(static_cast<float>(d));
+
+	// useless check as it't tested at conversion
+	if (OUT_OF_RANGE(d, double))
+		std::cout << "double: out of range\n";
+	else
+		printDouble(static_cast<double>(d));
 }
 
-static scalar_types generateScalars(std::string str, str_type type)
+static void printScalars(std::string str, str_type type)
 {
-	scalar_types scalars;
 	switch (type) {
 		case character:
-			scalars = scalarsFromChar(str[0]);
+			printFromChar(str[0]);
 			break ;
 		case integer:
-			scalars = scalarsFromInt(str.c_str());
+			printFromInt(str.c_str());
 			break ;
 		case floating_point:
-			scalars = scalarsFromFloating(str.c_str());
+			printFromFloating(str.c_str());
 			break ;
 		case double_float:
-			scalars = scalarsFromFloating(str.c_str());
+			printFromFloating(str.c_str());
 			break ;
 	}
-	return (scalars);
 }
 
 static void printException(const std::exception& e)
 {
 	std::cout << "Error: " << e.what() << '\n';
-}
-
-// TODO: add correct formating
-void printScalars(scalar_types scalars)
-{
-	std::cout << "char: " << scalars.c << '\n';
-	std::cout << "int: " << scalars.i << '\n';
-	std::cout << "float: " << scalars.f << '\n';
-	std::cout << "double: " << scalars.d << '\n';
 }
 
 int ScalarConverter::convert(std::string str)
@@ -146,15 +210,14 @@ int ScalarConverter::convert(std::string str)
 		printException(e);
 		return (-1);
 	}
-	// std::cout << type << '\n';
-	scalar_types scalars;
+	std::cout << type << '\n';
+	std::cout << std::numeric_limits<float>::max() << '\n';
 	try {
-		scalars = generateScalars(str, type);
+		printScalars(str, type);
 	}
 	catch (const std::invalid_argument& e) {
 		printException(e);
 		return (-1);
 	}
-	printScalars(scalars);
 	return (0);
 }
