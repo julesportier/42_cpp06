@@ -5,12 +5,13 @@
 #include <cctype>
 #include <cstdlib>
 #include <errno.h>
+#include <iomanip>
+#include <ios>
 
 // #define DEBUG
 /**************************
 * CONSTRUCTORS/DESTRUCTOR *
 **************************/
-// Why doing that, it's nonsense
 ScalarConverter::ScalarConverter() {}
 ScalarConverter::ScalarConverter(const ScalarConverter& src) {
 	(void)src;
@@ -81,16 +82,43 @@ static void printInt(int i)
 	std::cout << i << '\n';
 }
 
-static void printFloat(float f)
+static int setFixed()
 {
-	std::cout << "float: ";
-	std::cout << f << '\n';
+	int default_precision = std::cout.precision();
+	std::cout << std::fixed << std::setprecision(1);
+	return (default_precision);
 }
 
-static void printDouble(double d)
+static void resetIOSFlags(int precision)
+{
+	std::cout << std::setprecision(precision);
+	std::cout.unsetf(std::ios_base::floatfield);
+}
+
+static void printFloat(float f, bool fixed)
+{
+	std::cout << "float: ";
+	int default_precision;
+	if (fixed) {
+		default_precision = setFixed();
+	}
+	std::cout << f << "f\n";
+	if (fixed) {
+		resetIOSFlags(default_precision);
+	}
+}
+
+static void printDouble(double d, bool fixed)
 {
 	std::cout << "double: ";
+	int default_precision;
+	if (fixed) {
+		default_precision = setFixed();
+	}
 	std::cout << d << '\n';
+	if (fixed) {
+		resetIOSFlags(default_precision);
+	}
 }
 
 static void printFromPseudo(std::string str)
@@ -98,16 +126,16 @@ static void printFromPseudo(std::string str)
 	std::cout << "char: impossible\n";
 	std::cout << "int: impossible\n";
 	if (str.find("nan") != std::string::npos) {
-		std::cout << "float: " << std::numeric_limits<float>::quiet_NaN() << '\n';
-		std::cout << "double: " << std::numeric_limits<double>::quiet_NaN() << '\n';
+		printFloat(std::numeric_limits<float>::quiet_NaN(), false);
+		printDouble(std::numeric_limits<double>::quiet_NaN(), false);
 	}
 	else if (str.find("-inf") != std::string::npos) {
-		std::cout << "float: " << -std::numeric_limits<float>::infinity() << '\n';
-		std::cout << "double: " << -std::numeric_limits<double>::infinity() << '\n';
+		printFloat(-std::numeric_limits<float>::infinity(), false);
+		printDouble(-std::numeric_limits<double>::infinity(), false);
 	}
 	else if (str.find("+inf") != std::string::npos) {
-		std::cout << "float: " << std::numeric_limits<float>::infinity() << '\n';
-		std::cout << "double: " << std::numeric_limits<double>::infinity() << '\n';
+		std::cout << "float: +" << std::numeric_limits<float>::infinity() << "f\n";
+		std::cout << "double: +" << std::numeric_limits<double>::infinity() << '\n';
 	}
 	else {
 		throw std::invalid_argument("invalid input");
@@ -116,14 +144,10 @@ static void printFromPseudo(std::string str)
 
 static void printFromChar(char c)
 {
-#ifdef DEBUG
-	std::cout << "printFromChar()\n";
-#endif
-
 	printChar(c);
-	std::cout << "int: " << static_cast<int>(c);
-	std::cout << "float: " << static_cast<float>(c);
-	std::cout << "double: " << static_cast<double>(c);
+	printInt(static_cast<int>(c));
+	printFloat(static_cast<float>(c), true);
+	printDouble(static_cast<double>(c), true);
 }
 
 #define OUT_OF_RANGE(X, TYPE) (\
@@ -132,10 +156,6 @@ static void printFromChar(char c)
 
 static void printFromInt(const char* str)
 {
-#ifdef DEBUG
-	std::cout << "printFromInt()\n";
-#endif
-
 	char* end_ptr;
 	errno = 0;
 	long l = std::strtol(str, &end_ptr, 10);
@@ -156,29 +176,19 @@ static void printFromInt(const char* str)
 	if (OUT_OF_RANGE(l, float))
 		std::cout << "float: out of range\n";
 	else
-		printFloat(static_cast<float>(l));
+		printFloat(static_cast<float>(l), true);
 
 	if (OUT_OF_RANGE(l, double))
 		std::cout << "double: out of range\n";
 	else
-		printDouble(static_cast<double>(l));
+		printDouble(static_cast<double>(l), true);
 }
 
 static void printFromFloating(const char* str)
 {
-#ifdef DEBUG
-	std::cout << "printFromFloating()\n";
-#endif
-
 	char* end_ptr;
 	errno = 0;
 	double d = std::strtod(str, &end_ptr);
-
-#ifdef DEBUG
-	std::cout << "*end_ptr == " << *end_ptr << '\n';
-	std::cout << "errno == " << errno << '\n';
-#endif
-
 	if (!(*end_ptr == '\0'
 				|| (*end_ptr == 'f' && *(end_ptr + 1) == '\0'))
 			|| errno)
@@ -197,13 +207,13 @@ static void printFromFloating(const char* str)
 	if (OUT_OF_RANGE(d, float))
 		std::cout << "float: out of range\n";
 	else
-		printFloat(static_cast<float>(d));
+		printFloat(static_cast<float>(d), (d - static_cast<int>(d) == 0 ? true : false));
 
 	// useless check as it's tested at conversion
 	if (OUT_OF_RANGE(d, double))
 		std::cout << "double: out of range\n";
 	else
-		printDouble(static_cast<double>(d));
+		printDouble(static_cast<double>(d), (d - static_cast<int>(d) == 0 ? true : false));
 }
 
 static void printScalars(std::string str, str_type type)
@@ -245,8 +255,7 @@ int ScalarConverter::convert(std::string str)
 		printException(e);
 		return (-1);
 	}
-	std::cout << type << '\n';
-	std::cout << std::numeric_limits<float>::max() << '\n';
+	// std::cout << type << '\n';
 	try {
 		printScalars(str, type);
 	}
