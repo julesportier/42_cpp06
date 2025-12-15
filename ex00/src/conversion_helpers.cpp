@@ -39,7 +39,6 @@ void printFromInt(const char* str)
 	char* end_ptr;
 	errno = 0;
 	long l = std::strtol(str, &end_ptr, 10);
-	std::cout << *end_ptr << '\n';
 	if (*end_ptr != '\0' || errno)
 		throw std::invalid_argument("invalid input");
 
@@ -53,12 +52,12 @@ void printFromInt(const char* str)
 	else
 		printInt(static_cast<int>(l));
 
-	if (OUT_OF_RANGE(l, float))
+	if (OUT_OF_RANGE_F(l, float))
 		std::cout << "float: out of range\n";
 	else
 		printFloat(static_cast<float>(l), true);
 
-	if (OUT_OF_RANGE(l, double))
+	if (OUT_OF_RANGE_F(l, double))
 		std::cout << "double: out of range\n";
 	else
 		printDouble(static_cast<double>(l), true);
@@ -84,7 +83,7 @@ void printFromFloating(const char* str)
 	else
 		printInt(static_cast<int>(d));
 
-	if (OUT_OF_RANGE(d, float))
+	if (OUT_OF_RANGE_F(d, float))
 		std::cout << "float: out of range\n";
 	else
 		printFloat(static_cast<float>(d), (d - static_cast<int>(d) == 0 ? true : false));

@@ -7,6 +7,10 @@
 		(X) > std::numeric_limits<TYPE>::max()\
 		|| (X) < std::numeric_limits<TYPE>::min())
 
+# define OUT_OF_RANGE_F(X, TYPE) (\
+		(X) > std::numeric_limits<TYPE>::max()\
+		|| (X) < -std::numeric_limits<TYPE>::max())
+
 #define DIGITS "0123456789"
 
 typedef enum e_type {
