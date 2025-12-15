@@ -9,6 +9,7 @@ test() {
 # parsing
 test '0'
 test '-10'
+test '92233720368547758070' #LLONG_MAX * 10
 # formating
 # test '42.00002'
 # test '42.000002'
