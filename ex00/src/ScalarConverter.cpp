@@ -70,7 +70,7 @@ static void printChar(char c)
 	if (c < 0)
 		std::cout << "out of range\n";
 	else if (isprint(c))
-		std::cout << c << '\n';
+		std::cout << '\'' << c << '\'' << '\n';
 	else
 		std::cout << "Non displayable\n";
 }
