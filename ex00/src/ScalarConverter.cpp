@@ -33,23 +33,31 @@ typedef enum e_type {
 	integer,
 	floating_point,
 	double_float,
+	pseudo_float,
+	pseudo_double,
 } str_type;
 
 #define DIGITS "0123456789"
 
 static str_type getType(std::string str)
 {
-	if (str.find('f') != std::string::npos && str.length() != 1) {
+	if (str == "-inff" || str == "+inff" || str == "nanf") {
+		return(pseudo_float);
+	}
+	else if (str == "-inf" || str == "+inf" || str == "nan") {
+		return(pseudo_double);
+	}
+	else if (str.find('f') != std::string::npos && str.length() != 1) {
 		return(floating_point);
 	}
-	else if (str.length() == 1 && isprint(str[0])) {
-		return(character);
-	}
-	else if (str.find('.') != std::string::npos) {
+	else if (str.find('.') != std::string::npos && str.length() != 1) {
 		return(double_float);
 	}
 	else if (str.find_first_of(DIGITS) != std::string::npos) {
 		return(integer);
+	}
+	else if (str.length() == 1 && isprint(str[0])) {
+		return(character);
 	}
 	else {
 		throw std::invalid_argument("invalid input");
@@ -83,6 +91,27 @@ static void printDouble(double d)
 {
 	std::cout << "double: ";
 	std::cout << d << '\n';
+}
+
+static void printFromPseudo(std::string str)
+{
+	std::cout << "char: impossible\n";
+	std::cout << "int: impossible\n";
+	if (str.find("nan") != std::string::npos) {
+		std::cout << "float: " << std::numeric_limits<float>::quiet_NaN() << '\n';
+		std::cout << "double: " << std::numeric_limits<double>::quiet_NaN() << '\n';
+	}
+	else if (str.find("-inf") != std::string::npos) {
+		std::cout << "float: " << -std::numeric_limits<float>::infinity() << '\n';
+		std::cout << "double: " << -std::numeric_limits<double>::infinity() << '\n';
+	}
+	else if (str.find("+inf") != std::string::npos) {
+		std::cout << "float: " << std::numeric_limits<float>::infinity() << '\n';
+		std::cout << "double: " << std::numeric_limits<double>::infinity() << '\n';
+	}
+	else {
+		throw std::invalid_argument("invalid input");
+	}
 }
 
 static void printFromChar(char c)
@@ -170,7 +199,7 @@ static void printFromFloating(const char* str)
 	else
 		printFloat(static_cast<float>(d));
 
-	// useless check as it't tested at conversion
+	// useless check as it's tested at conversion
 	if (OUT_OF_RANGE(d, double))
 		std::cout << "double: out of range\n";
 	else
@@ -191,6 +220,12 @@ static void printScalars(std::string str, str_type type)
 			break ;
 		case double_float:
 			printFromFloating(str.c_str());
+			break ;
+		case pseudo_float:
+			printFromPseudo(str);
+			break ;
+		case pseudo_double:
+			printFromPseudo(str);
 			break ;
 	}
 }
