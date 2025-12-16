@@ -26,8 +26,7 @@ NAME := serializer
 SRC_DIR := src
 vpath %.cpp $(SRC_DIR)
 SRC :=	main.cpp \
-		Serializer.cpp \
-		Data.cpp
+		Serializer.cpp
 
 BUILD_DIR := build
 OBJ := $(SRC:%.cpp=$(BUILD_DIR)/%.o)

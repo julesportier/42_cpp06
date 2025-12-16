@@ -3,17 +3,9 @@
 
 # include <string>
 
-class Data {
-public:
-	Data();
-	Data(const Data& src);
-	~Data();
-	Data& operator=(const Data&);
-	std::string getName() const;
-	int getID() const;
-private:
-	int m_id;
-	std::string m_name;
+struct Data {
+	std::string name;
+	int id;
 };
 
 #endif

@@ -2,29 +2,30 @@
 #include "Data.h"
 #include <iostream>
 
+static void printBold(std::string str)
+{
+	std::cout << "\e[1m" << str << "\e[0m\n";
+}
+
 int main(void)
 {
-	Data *d;
-	try {
-		d = new Data;
-	} catch (const std::exception& e) {
-		std::cout << "Error: " << e.what() << '\n';
-		return (-1);
-	}
+	printBold("serialization of right address");
+	Data d = {.name = "my data", .id = 1};
+	Data* d_ptr = &d;
 	std::cout
-		<< "Data d: id == " << d->getID()
-		<< " name == " << d->getName()
-		<< " address == " << d << '\n';
-	uintptr_t ser = Serializer::serialize(d);
-	std::cout << "Data d: ser == " << ser << '\n';
-	d = Serializer::deserialize(ser);
-	std::cout << "Data d address after deserialization: " << d << '\n';
-	delete d;
+		<< "Data d: id == " << d.id
+		<< " name == " << d.name
+		<< " address == " << d_ptr << '\n';
+	uintptr_t serial = Serializer::serialize(d_ptr);
+	std::cout << "Data d_ptr: serial == " << serial << '\n';
+	d_ptr = Serializer::deserialize(serial);
+	std::cout << "Data d_ptr address after deserialization: " << d_ptr << '\n';
 
-	d = NULL;
-	ser = Serializer::serialize(d);
-	std::cout << "Data d(NULL): ser == " << ser << '\n';
-	d = Serializer::deserialize(ser);
-	std::cout << "Data d(NULL) address after deserialization: " << d << '\n';
+	printBold("serialization of NULL");
+	d_ptr = NULL;
+	serial = Serializer::serialize(d_ptr);
+	std::cout << "Data d_ptr(NULL): serial == " << serial << '\n';
+	d_ptr = Serializer::deserialize(serial);
+	std::cout << "Data d_ptr(NULL) address after deserialization: " << d_ptr << '\n';
 	return (0);
 }
