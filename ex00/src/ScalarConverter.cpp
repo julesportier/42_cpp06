@@ -34,11 +34,11 @@ static str_type getType(std::string str)
 	else if (str == "-inf" || str == "+inf" || str == "nan") {
 		return(pseudo_double);
 	}
-	else if (str.find('f') != std::string::npos && str.length() != 1) {
-		return(floating_point);
-	}
-	else if (str.find('.') != std::string::npos && str.length() != 1) {
-		return(double_float);
+	else if (str[0] != '.' && str.find('.') != std::string::npos && str.length() != 1) {
+		if (str.find('f') != std::string::npos)
+			return(floating_point);
+		else
+			return(double_float);
 	}
 	else if (str.find_first_of(DIGITS) != std::string::npos) {
 		return(integer);
@@ -80,12 +80,74 @@ static void printFromChar(char c)
 	printDouble(static_cast<double>(c));
 }
 
-static void printFromNumber(const char* str)
+static void printFromInt(const char* str)
+{
+	char* end_ptr;
+	errno = 0;
+	long l = std::strtol(str, &end_ptr, 10);
+	if (*end_ptr != '\0' || errno || OUT_OF_RANGE(l, int)) {
+		errno = 0;
+		throw std::invalid_argument("invalid input");
+	}
+
+	if (l > 127 || l < 0)
+		printChar(static_cast<char>(-1));
+	else
+		printChar(static_cast<char>(l));
+
+	if (OUT_OF_RANGE(l, int))
+		std::cout << "int: out of range\n";
+	else
+		printInt(static_cast<int>(l));
+
+	if (OUT_OF_RANGE_F(l, float))
+		std::cout << "float: out of range\n";
+	else
+		printFloat(static_cast<float>(l));
+
+	if (OUT_OF_RANGE_F(l, double))
+		std::cout << "double: out of range\n";
+	else
+		printDouble(static_cast<double>(l));
+}
+
+static void printFromFloat(const char* str)
+{
+	char* end_ptr;
+	errno = 0;
+	double d = std::strtof(str, &end_ptr);
+	if (errno || *end_ptr != 'f' || *(end_ptr + 1) != '\0') {
+		errno = 0;
+		throw std::invalid_argument("invalid input");
+	}
+
+	if (d > 127 || d < 0)
+		printChar(static_cast<char>(-1));
+	else
+		printChar(static_cast<char>(d));
+
+	if (OUT_OF_RANGE(d, int))
+		std::cout << "int: out of range\n";
+	else
+		printInt(static_cast<int>(d));
+
+	if (OUT_OF_RANGE_F(d, float))
+		std::cout << "float: out of range\n";
+	else
+		printFloat(static_cast<float>(d));
+
+	if (OUT_OF_RANGE_F(d, double))
+		std::cout << "double: out of range\n";
+	else
+		printDouble(static_cast<double>(d));
+}
+
+static void printFromDouble(const char* str)
 {
 	char* end_ptr;
 	errno = 0;
 	double d = std::strtod(str, &end_ptr);
-	if (*end_ptr != '\0' || errno) {
+	if (errno || *end_ptr != '\0') {
 		errno = 0;
 		throw std::invalid_argument("invalid input");
 	}
@@ -118,13 +180,13 @@ static void printScalars(std::string str, str_type type)
 			printFromChar(str[0]);
 			break ;
 		case integer:
-			printFromNumber(str.c_str());
+			printFromInt(str.c_str());
 			break ;
 		case floating_point:
-			printFromNumber(str.c_str());
+			printFromFloat(str.c_str());
 			break ;
 		case double_float:
-			printFromNumber(str.c_str());
+			printFromDouble(str.c_str());
 			break ;
 		case pseudo_float:
 			printFromPseudo(str);
