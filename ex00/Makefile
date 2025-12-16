@@ -27,8 +27,7 @@ SRC_DIR := src
 vpath %.cpp $(SRC_DIR)
 SRC :=	main.cpp \
 		ScalarConverter.cpp \
-		print_helpers.cpp \
-		conversion_helpers.cpp
+		helpers.cpp
 
 BUILD_DIR := build
 OBJ := $(SRC:%.cpp=$(BUILD_DIR)/%.o)

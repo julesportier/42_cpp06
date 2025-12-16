@@ -31,30 +31,18 @@ void printInt(int i)
 	std::cout << i << '\n';
 }
 
-void printFloat(float f, bool fixed)
+void printFloat(float f)
 {
-	std::cout << "float: ";
-	int default_precision;
-	if (fixed) {
-		default_precision = setFixed();
-	}
-	std::cout << f << "f\n";
-	if (fixed) {
-		resetIOSFlags(default_precision);
-	}
+	int default_precision = setFixed();
+	std::cout << "float: " << f << "f\n";
+	resetIOSFlags(default_precision);
 }
 
-void printDouble(double d, bool fixed)
+void printDouble(double d)
 {
-	std::cout << "double: ";
-	int default_precision;
-	if (fixed) {
-		default_precision = setFixed();
-	}
-	std::cout << d << '\n';
-	if (fixed) {
-		resetIOSFlags(default_precision);
-	}
+	int default_precision = setFixed();
+	std::cout << "double: " << d << '\n';
+	resetIOSFlags(default_precision);
 }
 
 void printException(const std::exception& e)

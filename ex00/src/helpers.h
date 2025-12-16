@@ -1,7 +1,7 @@
-#ifndef CONVERSION_HELPERS_H
-# define CONVERSION_HELPERS_H
+#ifndef PRINT_HELPERS_H
+# define PRINT_HELPERS_H
 
-# include <string>
+# include <exception>
 
 # define OUT_OF_RANGE(X, TYPE) (\
 		(X) > std::numeric_limits<TYPE>::max()\
@@ -10,8 +10,6 @@
 # define OUT_OF_RANGE_F(X, TYPE) (\
 		(X) > std::numeric_limits<TYPE>::max()\
 		|| (X) < -std::numeric_limits<TYPE>::max())
-
-#define DIGITS "0123456789"
 
 typedef enum e_type {
 	character,
@@ -22,9 +20,12 @@ typedef enum e_type {
 	pseudo_double,
 } str_type;
 
-void printFromPseudo(std::string str);
-void printFromChar(char c);
-void printFromInt(const char* str);
-void printFromFloating(const char* str);
+#define DIGITS "0123456789"
+
+void printChar(char c);
+void printInt(int i);
+void printFloat(float f);
+void printDouble(double d);
+void printException(const std::exception& e);
 
 #endif
